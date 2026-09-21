@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Upcoming Appointments</title>
+    
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Load Google Fonts (Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Load Phosphor Icons for modern icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Tailwind gray-100 */
+        }
+        
+        /* Custom scrollbar for the table container */
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #d1d5db; 
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af; 
+        }
+
+        /* Toast animation */
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        .toast-enter {
+            animation: slideIn 0.3s ease-out forwards;
+        }
+        .toast-exit {
+            animation: fadeOut 0.3s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="text-gray-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Top Navigation Bar -->
+    <header class="bg-indigo-600 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-3">
+                    <i class="ph ph-paw-print text-3xl"></i>
+                    <h1 class="text-xl font-bold tracking-tight">.Net 10 Sample Project</h1>
+                </div>
+                <div class="text-indigo-100 text-sm font-medium flex items-center gap-2">
+                    <i class="ph ph-user-circle text-xl"></i>
+                    <span>lorem ipsum</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        
+        <!-- Page Header -->
+        <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <h2 class="text-2xl font-semibold text-gray-900">Upcoming Appointments</h2>
+                <p class="text-sm text-gray-500 mt-1">Lorem ipsum dolor sit amet, consectetur adipiscing elit. </p>
+            </div>
+            <button onclick="refreshData()" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm transition-colors">
+                <i class="ph ph-arrows-clockwise text-lg"></i>
+                Refresh
+            </button>
+        </div>
+
+        <!-- Data Table Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">ID</th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date & Time</th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Pet Name</th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Owner Name</th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Owner Address</th>
+                            <th scope="col" class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body" class="bg-white divide-y divide-gray-200">
+                        <!-- Loading State -->
+                        <tr id="loading-row">
+                            <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                                <i class="ph ph-spinner-gap animate-spin text-4xl mb-2 text-indigo-500"></i>
+                                <p>Loading appointments...</p>
+                            </td>
+                        </tr>
+                        <!-- Rows will be populated here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Empty State (Hidden by default) -->
+            <div id="empty-state" class="hidden px-6 py-12 text-center">
+                <i class="ph ph-calendar-blank text-5xl text-gray-300 mb-3"></i>
+                <h3 class="text-lg font-medium text-gray-900">No appointments found</h3>
+                <p class="text-sm text-gray-500 mt-1">There are currently no upcoming appointments scheduled.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3"></div>
+
+    <script>
+        /* 
+         * ==============================================================================
+         * MOCK DATABASE
+         * This simulates the data living on your backend.
+         * ==============================================================================
+         */
+        let mockDatabase = [
+            { id: "A-1001", dateTime: "2026-09-22T09:00:00", petName: "Bella", ownerName: "Sarah Jenkins", ownerAddress: "142 Maple St, Galveston, TX" },
+            { id: "A-1002", dateTime: "2026-09-22T10:30:00", petName: "Max", ownerName: "David Chen", ownerAddress: "889 Ocean View Dr, Galveston, TX" },
+            { id: "A-1003", dateTime: "2026-09-23T14:15:00", petName: "Luna", ownerName: "Emily Rodriguez", ownerAddress: "45 West Ave, Galveston, TX" },
+            { id: "A-1004", dateTime: "2026-09-24T11:00:00", petName: "Charlie", ownerName: "Michael Chang", ownerAddress: "772 Pine Ln, Galveston, TX" },
+            { id: "A-1005", dateTime: "2026-09-25T16:45:00", petName: "Daisy", ownerName: "Jessica Smith", ownerAddress: "900 Broadway St, Galveston, TX" }
+        ];
+
+        /* 
+         * ==============================================================================
+         * API WRAPPERS
+         * Replace the mock logic inside these functions with your actual fetch calls.
+         * ==============================================================================
+         */
+
+        /**
+         * GET /appointments/upcoming
+         */
+        async function apiGetUpcomingAppointments() {
+            // ---------------------------------------------------------
+            // 🔴 REAL IMPLEMENTATION (Uncomment when connecting to API)
+            // ---------------------------------------------------------
+            /*
+            try {
+                const response = await fetch('https://your-api-domain.com/appointments/upcoming', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                return data; 
+            } catch (error) {
+                console.error("Error fetching appointments:", error);
+                showToast("Failed to load appointments.", "error");
+                return [];
+            }
+            */
+
+            // ---------------------------------------------------------
+            // 🟢 MOCK IMPLEMENTATION (Delete when connecting to API)
+            // ---------------------------------------------------------
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    // Return a copy of the mock database sorted by date
+                    const sortedData = [...mockDatabase].sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime));
+                    resolve(sortedData);
+                }, 800); // Simulate network latency
+            });
+        }
+
+        /**
+         * DELETE /appointments/{id}
+         */
+        async function apiDeleteAppointment(id) {
+            // ---------------------------------------------------------
+            // 🔴 REAL IMPLEMENTATION (Uncomment when connecting to API)
+            // ---------------------------------------------------------
+            /*
+            try {
+                const response = await fetch(`https://your-api-domain.com/appointments/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return true; // Indicate success
+            } catch (error) {
+                console.error(`Error deleting appointment ${id}:`, error);
+                return false; // Indicate failure
+            }
+            */
+
+            // ---------------------------------------------------------
+            // 🟢 MOCK IMPLEMENTATION (Delete when connecting to API)
+            // ---------------------------------------------------------
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    const index = mockDatabase.findIndex(app => app.id === id);
+                    if (index !== -1) {
+                        mockDatabase.splice(index, 1); // Remove from mock DB
+                        resolve(true); // Success
+                    } else {
+                        resolve(false); // Not found / Failure
+                    }
+                }, 600); // Simulate network latency
+            });
+        }
+
+        /* 
+         * ==============================================================================
+         * UI STATE & RENDERING LOGIC
+         * ==============================================================================
+         */
+        
+        // Format ISO date strings into readable format (e.g., "Sep 22, 2026, 9:00 AM")
+        function formatDateTime(isoString) {
+            const date = new Date(isoString);
+            return new Intl.DateTimeFormat('en-US', {
+                month: 'short', day: 'numeric', year: 'numeric',
+                hour: 'numeric', minute: '2-digit', hour12: true
+            }).format(date);
+        }
+
+        // Generate HTML for a single table row
+        function createRowHTML(appointment) {
+            return `
+                <tr id="row-${appointment.id}" class="hover:bg-indigo-50/50 transition-colors group">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        ${appointment.id}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <div class="flex items-center gap-2">
+                            <i class="ph ph-calendar text-gray-400"></i>
+                            ${formatDateTime(appointment.dateTime)}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                        ${appointment.petName}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        ${appointment.ownerName}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 max-w-xs truncate" title="${appointment.ownerAddress}">
+                        ${appointment.ownerAddress}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button onclick="handleDelete('${appointment.id}')" id="btn-del-${appointment.id}" class="inline-flex items-center justify-center p-2 rounded-md text-red-500 hover:bg-red-50 hover:text-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500">
+                            <i class="ph ph-trash text-lg pointer-events-none"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }
+
+        // Fetch and render data
+        async function loadTableData() {
+            const tbody = document.getElementById('table-body');
+            const emptyState = document.getElementById('empty-state');
+            
+            // Show loading state
+            tbody.innerHTML = `
+                <tr id="loading-row">
+                    <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                        <i class="ph ph-spinner-gap animate-spin text-4xl mb-2 text-indigo-500 inline-block"></i>
+                        <p>Loading appointments...</p>
+                    </td>
+                </tr>
+            `;
+            emptyState.classList.add('hidden');
+
+            // Call API
+            const appointments = await apiGetUpcomingAppointments();
+
+            // Render Results
+            tbody.innerHTML = '';
+            if (appointments.length === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                appointments.forEach(app => {
+                    tbody.insertAdjacentHTML('beforeend', createRowHTML(app));
+                });
+            }
+        }
+
+        // Handle the delete action button click
+        async function handleDelete(id) {
+            const row = document.getElementById(`row-${id}`);
+            const btn = document.getElementById(`btn-del-${id}`);
+            
+            // UI Feedback: Disable button and show spinner
+            btn.disabled = true;
+            btn.innerHTML = `<i class="ph ph-spinner-gap animate-spin text-lg"></i>`;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            // Call API
+            const success = await apiDeleteAppointment(id);
+
+            if (success) {
+                // Animate row removal
+                row.style.transition = "all 0.3s ease";
+                row.style.opacity = "0";
+                row.style.transform = "translateX(-10px)";
+                
+                setTimeout(() => {
+                    row.remove();
+                    showToast(`Appointment ${id} deleted successfully.`, 'success');
+                    
+                    // Check if table is empty now
+                    if (document.querySelectorAll('#table-body tr').length === 0) {
+                        document.getElementById('empty-state').classList.remove('hidden');
+                    }
+                }, 300);
+            } else {
+                // Revert UI if failed
+                btn.disabled = false;
+                btn.innerHTML = `<i class="ph ph-trash text-lg pointer-events-none"></i>`;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                showToast(`Failed to delete appointment ${id}.`, 'error');
+            }
+        }
+
+        // Manual refresh handler
+        function refreshData() {
+            loadTableData();
+            showToast("Data refreshed", "info");
+        }
+
+        // Custom Toast Notification System (replaces ugly alerts)
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            // Styling based on type
+            let bgColor, icon;
+            if (type === 'success') {
+                bgColor = 'bg-green-50 border-green-200 text-green-800';
+                icon = '<i class="ph-fill ph-check-circle text-green-500 text-xl"></i>';
+            } else if (type === 'error') {
+                bgColor = 'bg-red-50 border-red-200 text-red-800';
+                icon = '<i class="ph-fill ph-warning-circle text-red-500 text-xl"></i>';
+            } else {
+                bgColor = 'bg-blue-50 border-blue-200 text-blue-800';
+                icon = '<i class="ph-fill ph-info text-blue-500 text-xl"></i>';
+            }
+
+            toast.className = `toast-enter flex items-center gap-3 px-4 py-3 rounded-lg border shadow-sm ${bgColor}`;
+            toast.innerHTML = `
+                ${icon}
+                <span class="text-sm font-medium">${message}</span>
+            `;
+
+            container.appendChild(toast);
+
+            // Remove toast after 3 seconds
+            setTimeout(() => {
+                toast.classList.replace('toast-enter', 'toast-exit');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300); // Wait for exit animation to finish
+            }, 3000);
+        }
+
+        // Initialize Application
+        window.addEventListener('DOMContentLoaded', () => {
+            loadTableData();
+        });
+
+    </script>
+</body>
+</html>
