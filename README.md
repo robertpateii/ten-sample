@@ -23,15 +23,16 @@ Owner Address
 | PATCH /todoitems/{id}      | Update part of appointment, blank fields are ignored   | partial appt | none           |
 | DELETE /appointments/{id}  | Remove appointment from database                       | none         | none           |
 
-## Build / Test Dependencies
+## Build Dependencies
 .NET 10 SDK, VS Code, and C# Dev Kit for VS Code
-Note taht you can add /scalar/v1 to the dev server to explore the API and test by hand
 
-## HTTPS testing locally
-Possible but takes extra configuration, see https://learn.microsoft.com/en-us/aspnet/core/security/enforcing-ssl?view=aspnetcore-10.0
+## Debug / Local Testing
+* In VS Code, start with or without debug
+* Outside it, use `dotnet run --launch-profile http` or `dotnet run --launch-profile https`
+* Add /scalar/v1 to the debug server domain to explore/test the API with Scalar
 
 ## Todo
-- [ ] Wire up front-end
+- [ ] wire up front-end - almost there just need a create button or create default appointments for debug
 - [ ] add unit tests with Moq
 - [ ] update endpoints with MapGroup to DRY and TypedResults
 - [ ] the ID is a good case for data transfer object, FE should not be supplying it

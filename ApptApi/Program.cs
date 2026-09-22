@@ -7,6 +7,9 @@ builder.Services.AddDbContext<ApptDb>(opt => opt.UseInMemoryDatabase("ApptList")
 builder.Services.AddOpenApi();
 var app = builder.Build();
 
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();

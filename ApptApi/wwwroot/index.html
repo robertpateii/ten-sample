@@ -154,12 +154,8 @@
          * GET /appointments/upcoming
          */
         async function apiGetUpcomingAppointments() {
-            // ---------------------------------------------------------
-            // 🔴 REAL IMPLEMENTATION (Uncomment when connecting to API)
-            // ---------------------------------------------------------
-            /*
             try {
-                const response = await fetch('https://your-api-domain.com/appointments/upcoming', {
+                const response = await fetch('/appointments/upcoming', {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' }
                 });
@@ -172,30 +168,14 @@
                 showToast("Failed to load appointments.", "error");
                 return [];
             }
-            */
-
-            // ---------------------------------------------------------
-            // 🟢 MOCK IMPLEMENTATION (Delete when connecting to API)
-            // ---------------------------------------------------------
-            return new Promise(resolve => {
-                setTimeout(() => {
-                    // Return a copy of the mock database sorted by date
-                    const sortedData = [...mockDatabase].sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime));
-                    resolve(sortedData);
-                }, 800); // Simulate network latency
-            });
         }
 
         /**
          * DELETE /appointments/{id}
          */
         async function apiDeleteAppointment(id) {
-            // ---------------------------------------------------------
-            // 🔴 REAL IMPLEMENTATION (Uncomment when connecting to API)
-            // ---------------------------------------------------------
-            /*
             try {
-                const response = await fetch(`https://your-api-domain.com/appointments/${id}`, {
+                const response = await fetch(`/appointments/${id}`, {
                     method: 'DELETE',
                     headers: { 'Content-Type': 'application/json' }
                 });
@@ -206,22 +186,6 @@
                 console.error(`Error deleting appointment ${id}:`, error);
                 return false; // Indicate failure
             }
-            */
-
-            // ---------------------------------------------------------
-            // 🟢 MOCK IMPLEMENTATION (Delete when connecting to API)
-            // ---------------------------------------------------------
-            return new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    const index = mockDatabase.findIndex(app => app.id === id);
-                    if (index !== -1) {
-                        mockDatabase.splice(index, 1); // Remove from mock DB
-                        resolve(true); // Success
-                    } else {
-                        resolve(false); // Not found / Failure
-                    }
-                }, 600); // Simulate network latency
-            });
         }
 
         /* 
@@ -249,7 +213,7 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                         <div class="flex items-center gap-2">
                             <i class="ph ph-calendar text-gray-400"></i>
-                            ${formatDateTime(appointment.dateTime)}
+                            ${formatDateTime(appointment.date)}
                         </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
