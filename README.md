@@ -1,10 +1,10 @@
 # README
 
-Ramp up / learning project for .NET 10 and the Core Web API with the minimal API approach. Includes C#/SQL/EF8/Xunit/Moq/Swagger.
+Ramp up / learning project for .NET 10 and the Core Web API with the minimal API approach. Includes C#/SQL/EF8/Scalar. Next is adding Xunit and Moq.
 
 The front-end by AI and the back-end is organic.
 
-My wife is a veterinarian so this practice project uses pet appointments instead of the usual todos.
+I've many pets so this practice project uses pet appointments instead of the usual todos, and assumes there's just one vet or clinic for the sake of scope.
 
 Front-end displays these fields for each appointment:
 Appt ID
@@ -15,7 +15,7 @@ Owner Address
 
 | API                        | Description                                            | Request Body | Response Body  |
 | -------------------------- | ------------------------------------------------------ | ------------ | -------------- |
-| GET /appointments          | Assumes one vet or clinic                              | none         | array of appts |
+| GET /appointments          | Show all appointments in system                        | none         | array of appts |
 | GET /appointments/upcoming | Appointments from today and later                      | none         | array of appts |
 | GET /appointments/{id}     | Get just one appointment                               | none         | appt           |
 | POST /appointments         | Create new appointment with data but not ID            | appt         | appt           |
@@ -23,31 +23,16 @@ Owner Address
 | PATCH /todoitems/{id}      | Update part of appointment, blank fields are ignored   | partial appt | none           |
 | DELETE /appointments/{id}  | Remove appointment from database                       | none         | none           |
 
-# Build / Test Dependencies
-Visual Studio Code
-C# Dev Kit for Visual Studio Code
-.NET 10.0 SDK
-Run in VS Code to test
-Open the path provided in terminal and go to /scalar/v1
+## Build / Test Dependencies
+.NET 10 SDK, VS Code, and C# Dev Kit for VS Code
+Note taht you can add /scalar/v1 to the dev server to explore the API and test by hand
 
-# HTTPS testing
-run `dotnet dev-certs https --trust` in VS Code integrated terminal
-Read https://learn.microsoft.com/en-us/aspnet/core/security/enforcing-ssl?view=aspnetcore-10.0
+## HTTPS testing locally
+Possible but takes extra configuration, see https://learn.microsoft.com/en-us/aspnet/core/security/enforcing-ssl?view=aspnetcore-10.0
 
-
-# System / Front-end testing with with Cucumber-js and Selenium
-
-I get a lot of joy out of cucumber and behavior-driven development so it's included here, but not currently wired up at the time of writing.
-
-Steps to enable:
-1. add node & npm
-3. run `npm install --save-dev @cucumber/cucumber selenium-webdriver` to install the test framework (cucumber) and the browser driver (selenium)
-4. Add/edit the package.json so that the test script calls cucumber-js:
-```
-  "scripts": {
-    "test": "cucumber-js"
-  },
-```
-5. `npm test` to run the smoke test which will test and pass two scenarios against a selenium test page
-6. Customize features/smoke_test.features to match this site's heading and menu, change the domain in features/support/world.js to match this domain, and then re-run `npm test` to confirm they pass
-7. Add new scenarios want to test into features/smoke_test.feature with [Gherkin keywords](https://cucumber.io/docs/gherkin/reference), adding new feature files into the folder and wiring them up with new steps in features/step_definitions.
+## Todo
+- [ ] Wire up front-end
+- [ ] add unit tests with Moq
+- [ ] update endpoints with MapGroup to DRY and TypedResults
+- [ ] the ID is a good case for data transfer object, FE should not be supplying it
+- [ ] Add cucumber support of some sort, Reqnroll, Xunit.Gherkin.Quick, compare to cucumber-js or cucumber-js compare to cucumber-js that I normally use
