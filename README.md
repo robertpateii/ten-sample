@@ -23,6 +23,17 @@ Owner Address
 | PATCH /todoitems/{id}      | Update part of appointment, blank fields are ignored   | partial appt | none           |
 | DELETE /appointments/{id}  | Remove appointment from database                       | none         | none           |
 
+# Build / Test Dependencies
+Visual Studio Code
+C# Dev Kit for Visual Studio Code
+.NET 10.0 SDK
+Run in VS Code to test
+Open the path provided in terminal and go to /scalar/v1
+
+# HTTPS testing
+run `dotnet dev-certs https --trust` in VS Code integrated terminal
+Read https://learn.microsoft.com/en-us/aspnet/core/security/enforcing-ssl?view=aspnetcore-10.0
+
 
 # System / Front-end testing with with Cucumber-js and Selenium
 

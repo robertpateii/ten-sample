@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApptDb>(opt => opt.UseInMemoryDatabase("ApptList"));
@@ -9,6 +10,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 app.MapGet("appointments", async (ApptDb db) => 
@@ -25,8 +27,14 @@ app.MapGet("/appointments/{id}", async (int id, ApptDb db) =>
 
 app.MapPost("/appointments", async (Appt appt, ApptDb db) =>
 {
+    // TODO: I don't like allowing the front-end to specify the ID
+    // .NET will return an error if there's a conflict but that
+    // does not stop somone from specififying 290383412304857 etc.
+    // It will increment the ID if it's not provided, so need to block it
+    // Perhaps this is a good case to use a DTO
     db.Appts.Add(appt);
     await db.SaveChangesAsync();
+    return Results.Created($"/appointments/{appt.Id}", appt);
 });
 
 app.MapPut("/appointments/{id}", async (int id, Appt input, ApptDb db) =>
@@ -47,7 +55,7 @@ app.MapDelete("/appointments/{id}", async (int id, ApptDb db) =>
 {
     var appt = await db.Appts.FindAsync(id);
     if (appt is null) return Results.NotFound();
-    appt.IsArchived = true;
+    db.Appts.Remove(appt);
     await db.SaveChangesAsync();
     return Results.NoContent();
 });
