@@ -32,7 +32,6 @@ Owner Address
 * Add /scalar/v1 to the debug server domain to explore/test the API with Scalar
 
 ## Todo
-- [ ] wire up front-end - almost there just need a create button or create default appointments for debug
 - [ ] add unit tests with Moq
 - [ ] update endpoints with MapGroup to DRY and TypedResults
 - [ ] the ID is a good case for data transfer object, FE should not be supplying it

@@ -64,11 +64,14 @@
             <div class="flex justify-between h-16 items-center">
                 <div class="flex items-center gap-3">
                     <i class="ph ph-paw-print text-3xl"></i>
-                    <h1 class="text-xl font-bold tracking-tight">.Net 10 Sample Project</h1>
+                    <h1 class="text-xl font-bold tracking-tight">Minimal API practice project</h1>
+                    <i class="ph ph-paw-print text-3xl"></i>
                 </div>
-                <div class="text-indigo-100 text-sm font-medium flex items-center gap-2">
-                    <i class="ph ph-user-circle text-xl"></i>
-                    <span>lorem ipsum</span>
+                <div class="text-indigo-100 text-sm font-medium flex items-center gap-3">
+                    <button id="create-samples-button" type="button" onclick="createSampleAppointments()" class="inline-flex items-center gap-2 rounded-md bg-white/10 px-3 py-2 text-sm font-semibold text-white hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white">
+                        <span>Create sample appointments</span>
+                        <i class="ph ph-plus-circle text-lg"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -81,7 +84,7 @@
         <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
                 <h2 class="text-2xl font-semibold text-gray-900">Upcoming Appointments</h2>
-                <p class="text-sm text-gray-500 mt-1">Lorem ipsum dolor sit amet, consectetur adipiscing elit. </p>
+                <p class="text-sm text-gray-500 mt-1"><a href="/scalar/v1" class="underline text-blue-600">Open Scalar</a> to test POST, PUT, and PATCH requests.</p>
             </div>
             <button onclick="refreshData()" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm transition-colors">
                 <i class="ph ph-arrows-clockwise text-lg"></i>
@@ -188,6 +191,54 @@
             }
         }
 
+        /**
+         * POST /appointments
+         */
+        async function apiCreateAppointment(appointment) {
+            const response = await fetch('/appointments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(appointment)
+            });
+
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return response.json();
+        }
+
+        async function createSampleAppointments() {
+            const button = document.getElementById('create-samples-button');
+            button.disabled = true;
+            button.classList.add('opacity-50', 'cursor-not-allowed');
+            button.querySelector('i').className = 'ph ph-spinner-gap animate-spin text-lg';
+
+            const sampleTimes = [11, 13, 15];
+
+            try {
+                for (const [index, sample] of mockDatabase.slice(0, 3).entries()) {
+                    const sampleDate = new Date();
+                    sampleDate.setDate(sampleDate.getDate() + 1);
+                    sampleDate.setHours(sampleTimes[index], 0, 0, 0);
+
+                    await apiCreateAppointment({
+                        petName: sample.petName,
+                        date: sampleDate.toISOString(),
+                        ownerName: sample.ownerName,
+                        ownerAddress: sample.ownerAddress
+                    });
+                }
+
+                await loadTableData();
+                showToast('Created 3 sample appointments.', 'success');
+            } catch (error) {
+                console.error('Error creating sample appointments:', error);
+                showToast('Failed to create sample appointments.', 'error');
+            } finally {
+                button.disabled = false;
+                button.classList.remove('opacity-50', 'cursor-not-allowed');
+                button.querySelector('i').className = 'ph ph-plus-circle text-lg';
+            }
+        }
+
         /* 
          * ==============================================================================
          * UI STATE & RENDERING LOGIC
@@ -251,7 +302,8 @@
             emptyState.classList.add('hidden');
 
             // Call API
-            const appointments = await apiGetUpcomingAppointments();
+            const appointments = (await apiGetUpcomingAppointments())
+                .sort((a, b) => new Date(a.date) - new Date(b.date));
 
             // Render Results
             tbody.innerHTML = '';
